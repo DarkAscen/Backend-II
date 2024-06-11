@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Real Time Products</title>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="/js/main.js"></script>
+    </head>
+    <body>
+        <h2>Add Product</h2>
+        <form>
+            <input type="text" id="title" placeholder="Title" required>
+            <input type="text" id="description" placeholder="Description" required>
+            <input type="text" id="code" placeholder="Code" required>
+            <input type="number" id="price" placeholder="Price" required>
+            <input type="number" id="stock" placeholder="Stock" required>
+            <input type="text" id="category" placeholder="Category" required>
+            <input type="checkbox" id="status"> Status </form>
+            <button onclick="addProduct()">Add</button>
+        </form>
+        <h1>Real Time Product List</h1>
+        <table>
+        <thead>
+            <tr>
+                <th>TITLE</th>
+                <th>ID</th>
+                <th>DESCRIPTION</th>
+                <th>CODE</th>
+                <th>PRICE</th>
+                <th>STOCK</th>
+                <th>CATEGORY</th>
+            </tr>
+        </thead>
+        <tbody id="productsList">
+            {{#each products}}
+            <tr>
+                <td>{{title}}</td>
+                <td>{{id}}</td>
+                <td>{{description}}</td>
+                <td>{{code}}</td>
+                <td>${{price}}</td>
+                <td>{{stock}}</td>
+                <td>{{category}}</td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+    </body>
+</html>
