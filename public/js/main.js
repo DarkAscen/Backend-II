@@ -22,12 +22,18 @@ function addProduct() {
     socket.emit('addProduct', newProduct);
 }
 
-socket.on("productos", (products) => {
+function deleteProduct() {
+    const deleteId = document.getElementById('deleteId').value;
+    
+    socket.emit('deleteProduct', parseInt(deleteId));
+}
+
+function showProducts(products) {
     const productList = document.getElementById("productsList");
 
     productList.innerHTML = "";
 
-    products.forEach(product => {
+    products.forEach((product) => {
         const row = document.createElement('tr');
 
         row.innerHTML = 
@@ -38,6 +44,11 @@ socket.on("productos", (products) => {
             <td>$${product.price}</td>
             <td>${product.stock}</td>
             <td>${product.category}</td>`;
+
         productList.appendChild(row);
     });
+}
+
+socket.on("products", (products) => {
+    showProducts(products);
 });

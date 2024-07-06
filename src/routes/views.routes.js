@@ -1,16 +1,25 @@
 import { Router } from "express";
-import fs from "fs";
+import { productManager } from "../managers/ProductManager.js";
 
 const router = Router();
 
-const products = JSON.parse(fs.readFileSync('./src/data/products.json', 'utf-8'));
+router.get("/", (request, response) => {
+    const products = productManager.getProducts();
+    response.render("home", { 
+        products,
+        prevLink: {
+            exist: products.prevLink ? true : false,
+            link: products.prevLink
+        },
+        nextLink: {
+            exist: products.nextLink ? true : false,
+            link: products.nextLink
+        }
+    });
+});
 
-router.get("/", (request, resolve) => {
-    resolve.render("home", { products });	
-})
-
-router.get("/realtimeproducts", (request, resolve) => {
-    resolve.render("realtimeproducts", { products });
-})  
+router.get("/realtimeproducts", (request, response) => {
+    response.render("realTimeProducts");
+});
 
 export default router;

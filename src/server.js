@@ -1,16 +1,18 @@
 import express from "express";
+import { Server } from "socket.io";
+import mongoose from "mongoose";
+import path from "path"
+
 import routerProducts from "./routes/products.js";
 import routerCarts from "./routes/carts.js";
 import viewsRoutes from "./routes/views.routes.js";
 import handlebars from "express-handlebars"
-import path from "path"
 import __dirname from "./dirname.js";
-import { Server } from "socket.io";
-import fs from "fs";
+import { productModel } from "./models/product.model.js";
 
 const app = express();
-
 const PORT = 8080;
+const dbName = "backend-I";
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -31,16 +33,27 @@ app.use("/api/products", routerProducts);
 app.use("/api/carts", routerCarts);
 app.use("/", viewsRoutes);
 
+mongoose.connect(`mongodb://localhost:27017/${dbName}`)
+    .then(() => console.log("Conexión con MongoDB establecida"))  
+    .catch((error) => console.log(error));
+
 const httpServer = app.listen(PORT, () => {
     console.log(`Servidor creado en puerto http://localhost:${PORT}`);
 });
 
 const io = new Server(httpServer);
 
-let products = JSON.parse(fs.readFileSync('./src/data/products.json', 'utf-8'));
+let products = await productModel.find();
 
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
     console.log("Conexión establecida");
+
+    try {
+        const products = await productModel.find();
+        socket.emit('products', products);
+    } catch (error) {
+        console.log(error);
+    }
 
     socket.on("disconnect", () => {
         console.log("Cliente desconectado");
@@ -52,17 +65,13 @@ io.on("connection", (socket) => {
         products.push(newProduct);
         fs.writeFileSync('./src/data/products.json', JSON.stringify(products, null, '\t'));
         io.emit('productos', products);
-        response.status(201).json ({
-            message: `El producto de id ${newProduct.id} ha sido agregado correctamente`
-        });
     });
 
     socket.on('deleteProduct', (productId) => {
         products = products.filter(p => p.id !== productId);
         fs.writeFileSync('./src/data/products.json', JSON.stringify(products, null, '\t'));
-        io.emit('productos', products);
-        response.status(204).json({
-            message: "El producto ha sido eliminado satisfactoriamente"
-        });
+        io.emit('products', products);
     });
+
+    socket.emit('products', products);
 });

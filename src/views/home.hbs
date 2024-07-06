@@ -25,5 +25,13 @@
             </tr>
             {{/each}}
         </tbody>
+        <div>
+            {{#if prevLink}}
+            <a href="{{prevLink}}" class="button">Prev</a>
+            {{/if}}
+            {{#if nextLink}}
+            <a href="{{nextLink}}" class="button">Next</a>
+            {{/if}}
+        </div>
     </table>
 </div>

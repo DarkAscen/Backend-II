@@ -1,54 +1,76 @@
 import { Router } from "express";
-import fs from "fs";
+import { cartManager } from "../managers/CartManager.js";
+import { productManager } from "../managers/ProductManager.js";
 
 const router = Router();
 
-const products = JSON.parse(fs.readFileSync('./src/data/products.json', 'utf-8'));
-const carts = JSON.parse(fs.readFileSync('./src/data/carts.json', 'utf-8'));
+router.get("/:cid", async(request, response) => {
 
-router.post("/", (request, response) => {
-    const newId = carts[carts.length -1].id +1;
-    const newCart = {
-        id: newId,
-        products: []
-    };
+    try {
+        const cart = await cartManager.getProductsInCart(request.params.cid);
+        
+        if (!cart) {
+            response.status(400).json("No se encuentra el carrito buscado.");
+        } 
 
-    carts.push(newCart);
-    fs.writeFileSync('./src/data/carts.json', JSON.stringify(carts, null, '\t'));
-    response.json(carts);
+        response.json(cart);
+    } catch (error) {
+        response.status(400).json({ error: 'Error al obtener el carrito' });
+    }
 });
 
-router.get("/:cid", (request, response) => {
-
-    const {cid} = request.params;
-    const cart = carts.find(cart => cart.id == cid);
-
-    if (!cart) {
-        response.status(400).json("No se encuentra el carrito buscado.");
-    } else {
-        response.json(cart);
-    };
+router.post("/", async (request, response) => {
+    try {
+        const result = await cartManager.createCart();
+        response.json(result);
+    } catch (error) {
+        response.status(400).json({ error: 'Error al crear el carrito' });
+    }
 });
 
-router.post("/:cid/product/:pid", (request, response) => {
-    const {cid, pid} = request.params;
-    const cart = carts.find(cart => cart.id == cid);
-    const product = products.find(product => product.id == pid);
-
-    if(!cart) {
-        response.status(400).json("No se encuentra el carrito buscado.");
-    } else if (!product) {
-        response.status(400).json("No se encuentra el producto indicado.");
-    } else {
-        const exists = cart.products.find(product => product.product == pid);
-        if (exists){
-            exists.quantity += 1;
-        } else {
-            cart.products.push({ product: product.id, quantity: 1});
-        }
-        fs.writeFileSync('./src/data/carts.json', JSON.stringify(carts, null, '\t'));
-        response.json(cart);
+router.post("/:cid/product/:pid", async (request, response) => {
+    try {
+        const result = await cartManager.addProductToCart(request.params.cid, request.params.pid);
+        response.json(result);
+    } catch (error) {
+        response.status(400).json({ error: 'Error al agregar el producto al carrito' });
     }
 });  
+
+router.put("/:cid", async (request, response) => {
+    try {
+        const result = await cartManager.updateCartProducts(request.params.cid, request.body.products);
+        response.json(result);
+    } catch (error) {
+        response.status(400).json({ error: 'Error al actualizar el carrito' });
+    }
+});
+
+router.put("/:cid/product/:pid", async (request, response) => {
+    try {
+        const result = await cartManager.updateProductQuantity(request.params.cid, request.params.pid, request.body.quantity);
+        response.json(result);
+    } catch (error) {
+        response.status(400).json({ error: 'Error al actualizar el producto del carrito' });
+    }
+});
+
+router.delete("/:cid", async (request, response) => {
+    try {
+        await cartManager.deleteProductsFromCart(request.params.cid);
+        response.json('Productos eliminados del carrito');
+    } catch (error) {
+        response.status(400).json({ error: 'Error al eliminar el carrito' });
+    }
+});
+
+router.delete("/:cid/product/:pid", async (request, response) => {
+    try {
+        await cartManager.deleteProductFromCart(request.params.cid, request.params.pid);
+        response.json('Producto eliminado del carrito');
+    } catch (error) {
+        response.status(400).json({ error: 'Error al eliminar el producto del carrito' });
+    }
+});
 
 export default router;
