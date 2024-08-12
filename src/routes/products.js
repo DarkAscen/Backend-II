@@ -3,25 +3,25 @@ import { productManager } from "../managers/ProductManager.js";
 
 const router = Router();
 
-router.get("/", async (request, response) => {
-    const result = await productManager.getProducts(request.query);
-    response.json(result);
+router.get("/", async (req, res) => {
+    const result = await productManager.getProducts(req.query);
+    res.json(result);
 });
 
-router.get("/:pid", async (request, response) => {
+router.get("/:pid", async (req, res) => {
     try {
-        const product = await productManager.getProductById(request.params.pid);
+        const product = await productManager.getProductById(req.params.pid);
         if(!product) {
-            response.status(400).json({ error: "No existe el producto solicitado."})
+            res.status(400).json({ error: "No existe el producto solicitado."})
         } else {
-            response.json(product);
+            res.json(product);
         }
     } catch (error) {
-        response.status(400).json({ error: 'Error al obtener el producto' });
+        res.status(400).json({ error: 'Error al obtener el producto' });
     }
 });
 
-router.post("/", async (request, response) => { 
+router.post("/", async (req, res) => { 
     const {
         title,
         description,
@@ -30,7 +30,7 @@ router.post("/", async (request, response) => {
         status, 
         stock, 
         category
-    } = request.body;
+    } = req.body;
 
     if (
         !title ||
@@ -41,7 +41,7 @@ router.post("/", async (request, response) => {
         !stock ||
         !category
     ) {
-        return response.status(400).json ({
+        return res.status(400).json ({
             error: "Debe ingresar todos los campos",
         });
     }
@@ -56,29 +56,29 @@ router.post("/", async (request, response) => {
             stock,
             category
         });
-        response.json(result);
+        res.json(result);
     } catch (error) {
-        response.status(400).json ({
+        res.status(400).json ({
             error: 'Error al agregar el producto'
         });
     }
 });
 
-router.put("/:pid", async (request, response) => {
+router.put("/:pid", async (req, res) => {
     try {
-        const result = await productManager.updateProduct(request.params.pid, request.body);
-        response.json(result);
+        const result = await productManager.updateProduct(req.params.pid, req.body);
+        res.json(result);
     } catch (error) {
-        response.status(400).json({ error: 'Error al actualizar el producto' });
+        res.status(400).json({ error: 'Error al actualizar el producto' });
     }
 });
 
-router.delete("/:pid", async (request, response) => {
+router.delete("/:pid", async (req, res) => {
     try {
-        const result = await productManager.deleteProduct(request.params.pid);
-        response.json(result);
+        const result = await productManager.deleteProduct(req.params.pid);
+        res.json(result);
     } catch (error) {
-        response.status(400).json({ error: 'Error al eliminar el producto' });
+        res.status(400).json({ error: 'Error al eliminar el producto' });
     }
 });
 

@@ -3,9 +3,10 @@ import { productManager } from "../managers/ProductManager.js";
 
 const router = Router();
 
-router.get("/", (request, response) => {
+router.get("/", (req, res) => {
     const products = productManager.getProducts();
-    response.render("home", { 
+    const isSession = req.session.passport ? false : true;
+    res.render("home", { 
         products,
         prevLink: {
             exist: products.prevLink ? true : false,
@@ -18,8 +19,19 @@ router.get("/", (request, response) => {
     });
 });
 
-router.get("/realtimeproducts", (request, response) => {
-    response.render("realTimeProducts");
+router.get("/realtimeproducts", (req, res) => {
+    res.render("realTimeProducts");
 });
+
+router.get("login", (req, res) => {
+    const isSession = req.session.passport ? false : true;
+
+    if (!isSession) {
+        return res.redirect("/");
+    }
+
+    res.render("login");
+});
+
 
 export default router;
