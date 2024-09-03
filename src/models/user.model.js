@@ -23,10 +23,13 @@ const userSchema = new Schema({
         type: String,
         required: true,
     },
-    cartId: {
-        type: Schema.Types.ObjectId,
-        required: true,
-        ref: "cart",
+    carts: {
+        type: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: "cart",
+            },
+        ],
     },
     role: {
         type: String,
@@ -41,7 +44,7 @@ userSchema.pre("save", function (next) {
         return next();
     }
 
-    next(new Error("El email no es válido"));
+    next(new Error("The email is not valid"));
 });
 
 userSchema.pre("save", async function (next) {

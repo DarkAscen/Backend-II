@@ -1,9 +1,10 @@
 import passport from "passport";
 import localStrategy from "passport-local";
 import jwt from "passport-jwt";
-import { JWT_SECRET } from "../utils/jwt.js";
+
 import { userModel } from "../models/user.model.js";
 import { hashPassword} from "../utils/hashpass.js";
+import { config } from "./config.js";
 
 const LocalStrategy = localStrategy.Strategy;
 const JWTStrategy = jwt.Strategy;
@@ -29,13 +30,13 @@ export function initializePassport() {
             const { first_name, last_name, age, role, cartId } = req.body;
 
             if (!first_name || !last_name || !age || !role || !cartId) {
-                return done(null, false, { message: "Debe ingresar todos los campos" });
+                return done(null, false, { message: "You must enter all the fields" });
             };
 
             const userExists = await userModel.findOne({ email });
 
             if (userExists) {
-                return done(null, false, { message: "El usuario ya existe" });
+                return done(null, false, { message: "The user already exists" });
             }
 
             const hashedPassword = await hashPassword(password);
@@ -53,13 +54,13 @@ export function initializePassport() {
             const user = await userModel.findOne({ email });
 
             if (!user) {
-                return done(null, false, { message: "Usuario no encontrado" });
+                return done(null, false, { message: "User not found" });
             }
 
             const isPasswordValid = await user.comparePassword(password);
 
             if (!isPasswordValid) {
-                return done(null, false, { message: "Contraseña incorrecta" });
+                return done(null, false, { message: "Incorrect password" });
             }
 
             return done(null, user);
@@ -84,7 +85,7 @@ export function initializePassport() {
 
     passport.use("current", new JWTStrategy({
         jwtFromRequest: ExtractJWT.fromExtractors([CookieExtractor]),
-        secretOrKey: JWT_SECRET,
+        secretOrKey: config.JWT_SECRET,
     }, async (payload, done) => {
         try {
             done(null, payload);

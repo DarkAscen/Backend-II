@@ -1,9 +1,8 @@
 import jwt from "jsonwebtoken";
-
-export const JWT_SECRET = "cl4v3Sup3rS3cr3t4";
+import { config } from "../config/config.js";
 
 export function generateToken(payload) {
-    const token = jwt.sign(payload, JWT_SECRET, {
+    const token = jwt.sign(payload, config.JWT_SECRET, {
         expiresIn: "5m",
     });
     return token;
@@ -11,7 +10,7 @@ export function generateToken(payload) {
 
 export function verifyToken(token) {
     try {
-        const decoded = jwt.verify(token, JWT_SECRET);
+        const decoded = jwt.verify(token, config.JWT_SECRET);
         return decoded;
     } catch (error) {
         return false;

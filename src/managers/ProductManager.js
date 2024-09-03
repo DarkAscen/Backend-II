@@ -1,4 +1,4 @@
-import { productModel } from '../models/product.model.js';
+import { productService } from "../services/products.services.js";
 
 class ProductManager {
 
@@ -8,9 +8,9 @@ class ProductManager {
             limit: params.limit ? parseInt(params.limit) : 5,
         }
 
-        if (params.sort && (params.sort === 'asc' || params.sort === 'desc')) paginate.sort = { price: params.sort}
+        if (params.sort && (params.sort === "asc" || params.sort === "desc")) paginate.sort = { price: params.sort}
 
-        const products = await productModel.paginate({}, paginate);
+        const products = await productService.getProducts(paginate);
 
         products.prevLink = products.hasPrevPage?`http://localhost:8080/products?page=${products.prevPage}` : null;
         products.nextLink = products.hasNextPage?`http://localhost:8080/products?page=${products.nextPage}` : null;
@@ -26,9 +26,9 @@ class ProductManager {
 
     async getProductById(pid) {
         try {
-            const product = await productModel.findById(pid);
+            const product = await productService.getProductById(pid);
             if (!product) { 
-                console.log('Producto no encontrado');
+                console.log("Product not found");
                 return;
             } else { 
                 return product;
@@ -50,18 +50,18 @@ class ProductManager {
             !product.stock ||
             !product.category
         ) {
-            console.log('Error: Debe ingresar todos los campos.');
+            console.log("Error: You must enter all the fields.");
             return;
         }
 
         try {
-            const productExist = await productModel.findById(productData.code);
+            const productExist = await productService.getProductById(productData.code);
 
             if (productExist) {
-                console.log('Error: El código del producto ya existe');
+                console.log("Error: The product code already exists");
                 return;
             }
-            return await productModel.create(product);
+            return await productService.addProduct(product);
         } catch (error) {
             throw new Error(error);
         }
@@ -69,12 +69,12 @@ class ProductManager {
 
     async updateProduct(pid, productData) {
         try {
-            const product = await productModel.findByIdAndUpdate(pid, productData);
+            const product = await productService.updateProduct(pid, productData);
             if (!product) {
-                console.log('Producto no encontrado');
+                console.log("Product not found");
                 return;
             } else {
-                console.log('Producto actualizado correctamente');
+                console.log("Product updated correctly");
             } 
         } catch (error) {
             throw new Error(error);
@@ -83,17 +83,31 @@ class ProductManager {
 
     async deleteProduct(pid) {
         try {
-            const product = await productModel.findByIdAndDelete(pid);
+            const product = await productService.deleteProduct(pid);
             if (!product) {
-                console.log('Producto no encontrado');
+                console.log("Product not found");
                 return;
             } else {
-                console.log('Producto eliminado correctamente');
+                console.log("Product deleted correctly");
             }
         } catch (error) {
             throw new Error(error);
         }
     }
-}
+
+    async updateProductStock(pid, quantity) {
+        try {
+            const product = await productService.updateProductStock(pid, quantity);
+            if (!product) {
+                console.log("Product not found");
+                return;
+            } else {
+                console.log("Product updated correctly");
+            } 
+        } catch (error) {
+            throw new Error(error);
+        }
+    }
+};
 
 export const productManager = new ProductManager();
